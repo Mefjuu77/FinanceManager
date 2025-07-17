@@ -1,10 +1,11 @@
 import sys
+import os
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QMenu, QMessageBox, 
     QLineEdit, QComboBox, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QDoubleSpinBox, QToolTip, QProgressBar, QInputDialog, QPushButton, QAbstractItemView
 )
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QPainter, QCursor
-from PySide6.QtCore import Qt, QSortFilterProxyModel, QDate, QSize, QTimer
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QPainter, QCursor, QAction
+from PySide6.QtCore import Qt, QSortFilterProxyModel, QDate, QSize, QTimer, QCoreApplication
 from PySide6.QtCharts import QChart, QPieSeries
 from app.ui.main_window_ui import Ui_MainWindow
 from app.add_transaction_dialog import AddTransactionDialog
@@ -85,8 +86,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.chart_back_button.setVisible(False)
         self.chart_layout.insertWidget(0, self.chart_back_button)
 
-        # Connect signals to slots
         self.action_exit.triggered.connect(self.close)
+        self.action_factory_reset = QAction("Przywróć ustawienia fabryczne", self)
+        self.action_factory_reset.triggered.connect(self.factory_reset)
+        self.menu_file.addAction(self.action_factory_reset)
+        self.menu_file.addSeparator()
+        self.menu_file.addAction(self.action_exit)
+
         self.add_transaction_button.clicked.connect(self.show_add_transaction_dialog)
         self.description_filter.textChanged.connect(self.apply_filters)
         self.category_filter.currentTextChanged.connect(self.apply_filters)
@@ -411,6 +417,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QToolTip.showText(QCursor.pos(), tooltip_text)
         else:
             QToolTip.hideText()
+
+    def factory_reset(self):
+        reply = QMessageBox.question(self, "Potwierdzenie",
+                                     "Czy na pewno chcesz przywrócić ustawienia fabryczne?\n"
+                                     "Wszystkie dane zostaną usunięte.",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            db_path = os.path.join(os.path.dirname(__file__), 'data', 'finance.db')
+            if os.path.exists(db_path):
+                os.remove(db_path)
+            QCoreApplication.quit()
+            os.execl(sys.executable, sys.executable, *sys.argv)
 
 def main():
     db.initialize_database()
