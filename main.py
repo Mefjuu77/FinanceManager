@@ -433,7 +433,7 @@ def main():
             budget_amount, ok = QInputDialog.getDouble(
                 None, 
                 "Ustaw budżet miesięczny", 
-                f"Nie ustawiono jeszcze budżetu na {current_month}/{current_year}.\nChcesz go teraz zdefiniować?",
+                f"Nie ustawiono jeszcze budżetu na {current_month}/{current_year}.\nCzy chcesz go teraz zdefiniować?",
                 1000.00, 0.00, 1000000.00, 2
             )
             if ok:
